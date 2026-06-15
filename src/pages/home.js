@@ -23,7 +23,7 @@ export default function render(container) {
 
   hero.innerHTML = `
     <div class="hero-glow"></div>
-    <h1>Understand, Track & Reduce Your <span style="color: var(--color-accent); text-shadow: 0 0 40px rgba(245,158,11,0.3);">Carbon Footprint</span></h1>
+    <h1 style="font-family: 'Space Grotesk', sans-serif; font-weight: 800; color: #022c22; letter-spacing: -1px;">Understand, Track & Reduce Your <br/><span style="background: linear-gradient(135deg, #059669 0%, #0ea5e9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: none;">Carbon Footprint</span></h1>
     <p>Join the movement. Discover your environmental impact through personalized insights, and take action with science-backed reduction strategies.</p>
     <button class="btn btn-primary btn-hero-cta" style="font-size:1.25rem; padding:var(--space-4) var(--space-8); position:relative; overflow:hidden;">
       <span class="btn-shimmer"></span>
