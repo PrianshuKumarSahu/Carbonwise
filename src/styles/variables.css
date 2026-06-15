@@ -1,0 +1,79 @@
+:root {
+  /* Colors */
+  --color-primary: #10B981; /* Mint */
+  --color-primary-hover: #34D399;
+  --color-primary-light: #6EE7B7; 
+  --color-accent: #F59E0B; /* Vibrant Amber */
+  --color-accent-hover: #D97706;
+  
+  --color-bg: #022C22; /* Deep Forest Green for premium look */
+  --color-bg-card: rgba(6, 78, 59, 0.4); /* Glassmorphism background */
+  --color-bg-blur: blur(16px);
+  --color-fg: #ECFDF5; 
+  --color-fg-muted: #A7F3D0;
+  --color-muted: rgba(16, 185, 129, 0.1);
+  
+  --color-border: rgba(52, 211, 153, 0.2);
+  --color-ring: rgba(16, 185, 129, 0.5);
+  
+  --color-destructive: #DC2626;
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-info: #0891B2;
+
+  /* Typography */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Work Sans', sans-serif;
+
+  /* Spacing Scale (4px base) */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.5rem;   /* 24px */
+  --space-6: 2rem;     /* 32px */
+  --space-8: 3rem;     /* 48px */
+  --space-10: 4rem;    /* 64px */
+  --space-12: 5rem;    /* 80px */
+  --space-16: 8rem;    /* 128px */
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px; /* Organic */
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08); /* Soft natural depth */
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Z-Index */
+  --z-negative: -1;
+  --z-elevate: 1;
+  --z-sticky: 100;
+  --z-drawer: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+}
+
+/* Optional Dark Mode (Based on preference) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #022C22;
+    --color-bg-card: #064E3B;
+    --color-fg: #ECFDF5;
+    --color-fg-muted: #A7F3D0;
+    --color-muted: #065F46;
+    --color-border: #047857;
+  }
+}

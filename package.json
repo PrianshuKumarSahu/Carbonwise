@@ -1,0 +1,26 @@
+{
+  "name": "carbonwise",
+  "private": true,
+  "version": "1.0.0",
+  "description": "CarbonWise — Understand, Track & Reduce Your Carbon Footprint. A personalized carbon footprint awareness platform.",
+  "author": "CarbonWise Team",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.0",
+    "lucide": "^0.477.0"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.10.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.1"
+  }
+}

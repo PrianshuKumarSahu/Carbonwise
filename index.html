@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline';" />
+
+  <title>CarbonWise — Understand, Track & Reduce Your Carbon Footprint</title>
+  <meta name="description" content="CarbonWise helps you understand, track, and reduce your carbon footprint through a personalized calculator, interactive dashboard, and science-backed reduction tips." />
+  <meta name="keywords" content="carbon footprint, carbon calculator, sustainability, climate change, CO2 emissions, reduce carbon, eco-friendly" />
+  <meta name="author" content="CarbonWise" />
+  <meta name="theme-color" content="#059669" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="CarbonWise — Understand, Track & Reduce Your Carbon Footprint" />
+  <meta property="og:description" content="Personalized carbon footprint calculator with interactive dashboard and science-backed reduction tips." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://carbonproject-499409.web.app" />
+
+  <!-- Fonts: Outfit (headings) + Work Sans (body) — UI/UX Pro Max recommended -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/src/styles/variables.css" />
+  <link rel="stylesheet" href="/src/styles/base.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/animations.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header id="app-header"></header>
+
+  <main id="main-content" role="main" aria-live="polite">
+    <div id="app" class="page-container">
+      <!-- Pages rendered here by router -->
+    </div>
+  </main>
+
+  <footer id="app-footer"></footer>
+
+  <!-- Toast notification container -->
+  <div id="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Modal portal -->
+  <div id="modal-container" role="dialog" aria-hidden="true"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
