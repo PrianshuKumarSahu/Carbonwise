@@ -9,6 +9,7 @@ import { formatCO2, formatPercent, formatComparison, formatDate } from '../utils
 import { createDoughnutChart, createLineChart, createBarChart, createRadialGauge } from '../components/charts.js';
 import { AVERAGES } from '../data/emission-factors.js';
 import { TIPS } from '../data/tips.js';
+import { sanitizeHTML } from '../utils/sanitize.js';
 import { createIcons } from 'lucide';
 import { iconSVG } from '../utils/icon-helper.js';
 
@@ -169,7 +170,7 @@ export default function render(container) {
     card.className = 'card action-card p-5';
     card.style.padding = 'var(--space-5)';
     
-    card.innerHTML = `
+    card.innerHTML = sanitizeHTML(`
       <div class="icon-wrapper">${iconSVG(tip.icon ? tip.icon.charAt(0).toUpperCase() + tip.icon.slice(1).replace(/-([a-z])/g, (_, c) => c.toUpperCase()) : 'Lightbulb', 24, '#10B981')}</div>
       <h3 style="margin-bottom: var(--space-2); text-transform: capitalize;">${catName} Impact</h3>
       <p style="color: var(--color-fg-muted); margin-bottom: var(--space-4);">
@@ -180,7 +181,7 @@ export default function render(container) {
         <div style="font-weight: 600;">${tip.title}</div>
         <div style="font-size: 0.875rem; color: var(--color-fg-muted);">${tip.description}</div>
       </div>
-    `;
+    `);
     insightsGrid.appendChild(card);
   });
   
@@ -189,11 +190,11 @@ export default function render(container) {
   const reduceCta = document.createElement('div');
   reduceCta.className = 'text-center';
   reduceCta.style.marginTop = 'var(--space-6)';
-  reduceCta.innerHTML = `
+  reduceCta.innerHTML = sanitizeHTML(`
     <button class="btn btn-primary" onclick="window.location.hash='#/reduce'">
       ${iconSVG('ArrowRight', 20)} Explore All Reduction Strategies
     </button>
-  `;
+  `);
   insightsSection.appendChild(reduceCta);
   
   page.appendChild(insightsSection);

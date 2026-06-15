@@ -12,13 +12,16 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "chart.js": "^4.5.0",
+    "dompurify": "^3.4.10",
     "lucide": "^0.477.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "happy-dom": "^20.10.3",
     "vite": "^6.3.5",
     "vitest": "^3.2.1"

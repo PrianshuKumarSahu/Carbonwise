@@ -7,6 +7,7 @@ import { CARBON_FACTS, QUIZ_QUESTIONS, MYTH_BUSTERS, COMPARISONS } from '../data
 import { getState, setState } from '../state.js';
 import { createIcons } from 'lucide';
 import { iconSVG } from '../utils/icon-helper.js';
+import { sanitizeHTML } from '../utils/sanitize.js';
 
 export default function render(container) {
   const page = document.createElement('div');
@@ -57,13 +58,17 @@ export default function render(container) {
         const card = document.createElement('div');
         card.className = 'card';
         card.style.padding = 'var(--space-5)';
-        card.innerHTML = `
+        const factEl = document.createElement('div');
+        factEl.innerHTML = sanitizeHTML(`
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <span class="badge badge-info" style="margin-bottom: var(--space-3);"><i data-lucide="info" style="width:14px; height:14px; margin-right:4px;"></i>${fact.category}</span>
           </div>
-          <p style="font-size: 1.1rem; font-weight: 500; margin-bottom: var(--space-4);">${fact.fact}</p>
-          <div style="color: var(--color-fg-muted); font-size: 0.875rem; display:flex; align-items:center; gap:4px;"><i data-lucide="book-open" style="width:14px; height:14px;"></i> Source: ${fact.source}</div>
-        `;
+          <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--space-3);">${fact.fact}</div>
+          <div style="font-size: 0.875rem; color: var(--color-primary); display:flex; align-items:center; gap:4px;">
+            ${iconSVG('BookOpen', 16, '#059669')} Source: ${fact.source}
+          </div>
+        `);
+        card.appendChild(factEl);
         grid.appendChild(card);
       });
       
@@ -136,13 +141,22 @@ export default function render(container) {
         qBody.appendChild(optsContainer);
         
         if (answered) {
-          const exp = document.createElement('div');
-          exp.style.marginTop = 'var(--space-4)';
-          exp.style.padding = 'var(--space-4)';
-          exp.style.background = 'var(--color-muted)';
-          exp.style.borderRadius = 'var(--radius-md)';
-          exp.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
-          qBody.appendChild(exp);
+          const isCorrect = (q.correctIndex !== null); // Placeholder for correctness check
+          const explanationEl = document.createElement('div');
+          explanationEl.style.marginTop = 'var(--space-4)';
+          explanationEl.style.padding = 'var(--space-4)';
+          explanationEl.style.background = 'var(--color-muted)';
+          explanationEl.style.borderRadius = 'var(--radius-md)';
+          explanationEl.innerHTML = sanitizeHTML(`
+            <div style="display:flex; align-items:flex-start; gap:var(--space-2);">
+              ${isCorrect ? iconSVG('CheckCircle', 24, '#10B981') : iconSVG('AlertCircle', 24, '#DC2626')}
+              <div>
+                <strong style="color: ${isCorrect ? 'var(--color-primary)' : 'var(--color-destructive)'}">${isCorrect ? 'Correct!' : 'Incorrect.'}</strong>
+                <div style="margin-top:var(--space-1);">${q.explanation}</div>
+              </div>
+            </div>
+          `);
+          qBody.appendChild(explanationEl);
           
           const nextBtn = document.createElement('button');
           nextBtn.className = 'btn btn-primary';
@@ -227,7 +241,7 @@ export default function render(container) {
         card.className = 'card';
         card.style.padding = 'var(--space-5)';
         
-        card.innerHTML = `
+        card.innerHTML = sanitizeHTML(`
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-4);">
             <h3 style="margin:0;">${comp.activity}</h3>
             <div style="color: var(--color-primary); font-weight:800; font-size:1.25rem;">${comp.co2Kg} kg CO₂</div>
@@ -241,7 +255,7 @@ export default function render(container) {
             <i data-lucide="${comp.icon}" style="width: 32px; height: 32px; color: var(--color-accent); margin-bottom: var(--space-2);"></i>
             <div style="font-weight: 600; font-size: 1.1rem;">${comp.equivalent}</div>
           </div>
-        `;
+        `);
         
         grid.appendChild(card);
       });

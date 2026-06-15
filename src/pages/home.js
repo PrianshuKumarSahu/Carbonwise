@@ -232,6 +232,8 @@ export default function render(container) {
   }
 
   function drawParticles() {
+    if (!isVisible) return; // Pause animation when off-screen
+    
     ctx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
 
     particles.forEach(p => {
@@ -277,7 +279,18 @@ export default function render(container) {
     animId = requestAnimationFrame(drawParticles);
   }
 
-  drawParticles();
+  // Only animate when the hero section is visible
+  let isVisible = true;
+  const particleObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      isVisible = entry.isIntersecting;
+      if (isVisible) {
+        drawParticles();
+      }
+    });
+  }, { threshold: 0 });
+  
+  particleObserver.observe(particlesCanvas);
 
   // ─── HOVER TILT EFFECT ON CARDS ───────────────────────────────
   const howCards = page.querySelectorAll('.how-card');

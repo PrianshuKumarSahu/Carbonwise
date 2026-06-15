@@ -7,6 +7,7 @@ import { getState, setState } from '../state.js';
 import { TIPS } from '../data/tips.js';
 import { formatCO2 } from '../utils/formatters.js';
 import { showToast } from '../components/toast.js';
+import { sanitizeHTML } from '../utils/sanitize.js';
 import { createIcons } from 'lucide';
 import { iconSVG } from '../utils/icon-helper.js';
 
@@ -47,12 +48,12 @@ export default function render(container) {
       impactBox.style.display = 'inline-block';
       impactBox.style.marginTop = 'var(--space-4)';
       
-      impactBox.innerHTML = `
+      impactBox.innerHTML = sanitizeHTML(`
         <div style="color: var(--color-fg-muted); font-weight: 600; margin-bottom: var(--space-2);">Projected Impact of Pledges</div>
         <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary);">
           ${formatCO2(state.results.totalAnnual)} ${iconSVG('arrow-right', 20, '#10B981')} ${formatCO2(newTotal)}
         </div>
-      `;
+      `);
       header.appendChild(impactBox);
     }
     
@@ -62,7 +63,7 @@ export default function render(container) {
     if (pledges.length > 0) {
       const pledgeSec = document.createElement('div');
       pledgeSec.style.marginBottom = 'var(--space-10)';
-      pledgeSec.innerHTML = `<h2 style="display:flex; align-items:center; gap:var(--space-2);">${iconSVG('target', 28, '#F59E0B')} Your Pledges</h2>`;
+      pledgeSec.innerHTML = sanitizeHTML(`<h2 style="display:flex; align-items:center; gap:var(--space-2);">${iconSVG('target', 28, '#F59E0B')} Your Pledges</h2>`);
       
       const pledgeGrid = document.createElement('div');
       pledgeGrid.className = 'grid grid-3';
@@ -83,7 +84,7 @@ export default function render(container) {
         
         const badgeColor = t.impact === 'high' ? 'success' : t.impact === 'medium' ? 'info' : 'warning';
         
-        card.innerHTML = `
+        card.innerHTML = sanitizeHTML(`
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-3);">
             <div class="icon-wrapper" style="margin-bottom:0; width:40px; height:40px;">${iconSVG(t.icon, 20, '#10B981')}</div>
             <span class="badge badge-${badgeColor}">${t.impact} Impact</span>
@@ -92,7 +93,7 @@ export default function render(container) {
           <p style="color: var(--color-fg-muted); font-size: 0.875rem; margin-bottom: var(--space-4); flex: 1;">
             Saves ~${formatCO2(t.savingsKgPerYear)} / year
           </p>
-        `;
+        `);
         
         const toggleBtn = document.createElement('button');
         toggleBtn.className = `btn btn-${isDone ? 'secondary' : 'primary'}`;
@@ -157,7 +158,7 @@ export default function render(container) {
       
       const badgeColor = t.impact === 'high' ? 'success' : t.impact === 'medium' ? 'info' : 'warning';
       
-      card.innerHTML = `
+      card.innerHTML = sanitizeHTML(`
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-3);">
           <div class="icon-wrapper" style="margin-bottom:0; width:40px; height:40px;">${iconSVG(t.icon, 20, '#10B981')}</div>
           <span class="badge badge-${badgeColor}">${t.impact} Impact</span>
@@ -168,7 +169,7 @@ export default function render(container) {
           <span style="color: var(--color-primary);">~${formatCO2(t.savingsKgPerYear)}/yr</span>
           <span style="color: var(--color-fg-muted);">Difficulty: ${t.difficulty}</span>
         </div>
-      `;
+      `);
       
       const pledgeBtn = document.createElement('button');
       pledgeBtn.className = 'btn btn-outline';
