@@ -1,6 +1,15 @@
 /**
  * @module reduce
  * @description Reduction tips and pledges page.
+ *
+ * Displays actionable carbon reduction strategies organized by category.
+ * Users can pledge to take specific actions and mark them as complete.
+ * If calculator results exist, shows projected impact of pledges.
+ *
+ * @requires ../state.js - For reading/writing pledges and completed actions.
+ * @requires ../data/tips.js - Reduction tip definitions.
+ * @requires ../utils/formatters.js - CO₂ formatting utilities.
+ * @requires ../utils/ui-helpers.js - Reusable card factory functions.
  */
 
 import { getState, setState } from '../state.js';
@@ -10,195 +19,176 @@ import { showToast } from '../components/toast.js';
 import { sanitizeHTML } from '../utils/sanitize.js';
 import { createIcons } from 'lucide';
 import { iconSVG } from '../utils/icon-helper.js';
+import {
+  createTipCard,
+  createPledgeCard,
+  createSectionHeading,
+  createEmptyState,
+} from '../utils/ui-helpers.js';
 
+/** @type {string} Currently selected category filter. */
+let currentCategory = 'all';
+
+/**
+ * Calculates the total potential CO₂ savings from a list of pledge IDs.
+ * @param {string[]} pledgeIds - Array of tip IDs the user has pledged.
+ * @returns {number} Total projected savings in kg CO₂e per year.
+ */
+function calculatePledgeSavings(pledgeIds) {
+  return pledgeIds.reduce((acc, pId) => {
+    const tip = TIPS.find((t) => t.id === pId);
+    return acc + (tip ? tip.savingsKgPerYear : 0);
+  }, 0);
+}
+
+/**
+ * Builds the projected impact box shown in the header.
+ * @param {number} currentTotal - Current annual emissions in kg CO₂e.
+ * @param {number} newTotal - Projected annual emissions after pledges.
+ * @returns {HTMLDivElement} The impact box element.
+ */
+function buildImpactBox(currentTotal, newTotal) {
+  const box = document.createElement('div');
+  box.className = 'bg-muted p-4 rounded-lg inline-block mt-4';
+  box.innerHTML = sanitizeHTML(`
+    <div class="text-muted font-semibold mb-2">Projected Impact of Pledges</div>
+    <div class="text-2xl font-extrabold text-primary">
+      ${formatCO2(currentTotal)} ${iconSVG('arrow-right', 20, '#10B981')} ${formatCO2(newTotal)}
+    </div>
+  `);
+  return box;
+}
+
+/**
+ * Builds the category filter tab bar.
+ * @param {Function} onSelect - Callback invoked with the selected category string.
+ * @returns {HTMLDivElement} The tab list element.
+ */
+function buildCategoryTabs(onSelect) {
+  const tabs = document.createElement('div');
+  tabs.className = 'tab-list';
+
+  const categories = ['all', 'transport', 'energy', 'diet', 'shopping', 'lifestyle'];
+  categories.forEach((cat) => {
+    const btn = document.createElement('button');
+    btn.className = `tab ${currentCategory === cat ? 'active' : ''}`;
+    btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+    btn.addEventListener('click', () => onSelect(cat));
+    tabs.appendChild(btn);
+  });
+
+  return tabs;
+}
+
+/**
+ * Renders the Reduce page into the provided container.
+ * @param {HTMLElement} container - The parent DOM element to render into.
+ * @returns {Function} Cleanup function to remove event listeners.
+ */
 export default function render(container) {
   const page = document.createElement('div');
   page.className = 'page-reduce animate-fadeIn';
-  
-  let currentCategory = 'all';
-  
+
   const renderContent = () => {
     const state = getState();
     const pledges = state.pledges || [];
     const completed = state.completedActions || [];
-    
+
     page.innerHTML = '';
-    
-    // Header
+
+    // ─── Header ──────────────────────────────────────────────────
     const header = document.createElement('div');
-    header.className = 'hero';
-    header.style.paddingTop = 'var(--space-8)';
+    header.className = 'hero pt-8';
     header.innerHTML = `
       <h1>Reduce Your Footprint</h1>
       <p>Pledge to make changes and track your impact.</p>
     `;
-    
+
     if (state.results) {
-      const potential = pledges.reduce((acc, pId) => {
-        const t = TIPS.find(tip => tip.id === pId);
-        return acc + (t ? t.savingsKgPerYear : 0);
-      }, 0);
-      
-      const newTotal = Math.max(0, state.results.totalAnnual - potential);
-      
-      const impactBox = document.createElement('div');
-      impactBox.style.background = 'var(--color-muted)';
-      impactBox.style.padding = 'var(--space-4)';
-      impactBox.style.borderRadius = 'var(--radius-lg)';
-      impactBox.style.display = 'inline-block';
-      impactBox.style.marginTop = 'var(--space-4)';
-      
-      impactBox.innerHTML = sanitizeHTML(`
-        <div style="color: var(--color-fg-muted); font-weight: 600; margin-bottom: var(--space-2);">Projected Impact of Pledges</div>
-        <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary);">
-          ${formatCO2(state.results.totalAnnual)} ${iconSVG('arrow-right', 20, '#10B981')} ${formatCO2(newTotal)}
-        </div>
-      `);
-      header.appendChild(impactBox);
+      const savings = calculatePledgeSavings(pledges);
+      const newTotal = Math.max(0, state.results.totalAnnual - savings);
+      header.appendChild(buildImpactBox(state.results.totalAnnual, newTotal));
     }
-    
+
     page.appendChild(header);
-    
-    // Pledged Actions Section (if any)
+
+    // ─── Pledged Actions ─────────────────────────────────────────
     if (pledges.length > 0) {
       const pledgeSec = document.createElement('div');
-      pledgeSec.style.marginBottom = 'var(--space-10)';
-      pledgeSec.innerHTML = sanitizeHTML(`<h2 style="display:flex; align-items:center; gap:var(--space-2);">${iconSVG('target', 28, '#F59E0B')} Your Pledges</h2>`);
-      
+      pledgeSec.className = 'mb-10';
+      pledgeSec.appendChild(createSectionHeading('Your Pledges', 'target', '#F59E0B'));
+
       const pledgeGrid = document.createElement('div');
       pledgeGrid.className = 'grid grid-3';
-      
-      pledges.forEach(pId => {
-        const t = TIPS.find(tip => tip.id === pId);
-        if (!t) return;
-        
+
+      pledges.forEach((pId) => {
+        const tip = TIPS.find((t) => t.id === pId);
+        if (!tip) return;
+
         const isDone = completed.includes(pId);
-        
-        const card = document.createElement('div');
-        card.className = `card action-card ${isDone ? 'done' : ''}`;
-        card.style.padding = 'var(--space-5)';
-        if (isDone) {
-          card.style.opacity = '0.7';
-          card.style.background = 'var(--color-muted)';
-        }
-        
-        const badgeColor = t.impact === 'high' ? 'success' : t.impact === 'medium' ? 'info' : 'warning';
-        
-        card.innerHTML = sanitizeHTML(`
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-3);">
-            <div class="icon-wrapper" style="margin-bottom:0; width:40px; height:40px;">${iconSVG(t.icon, 20, '#10B981')}</div>
-            <span class="badge badge-${badgeColor}">${t.impact} Impact</span>
-          </div>
-          <h3 style="font-size: 1.1rem; margin-bottom: var(--space-2);">${t.title}</h3>
-          <p style="color: var(--color-fg-muted); font-size: 0.875rem; margin-bottom: var(--space-4); flex: 1;">
-            Saves ~${formatCO2(t.savingsKgPerYear)} / year
-          </p>
-        `);
-        
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = `btn btn-${isDone ? 'secondary' : 'primary'}`;
-        toggleBtn.style.width = '100%';
-        toggleBtn.innerHTML = isDone ? `${iconSVG('check-circle', 20)} Completed` : `${iconSVG('circle', 20)} Mark Complete`;
-        
-        toggleBtn.addEventListener('click', () => {
+        const card = createPledgeCard(tip, isDone, () => {
           if (isDone) {
-            setState({ completedActions: completed.filter(id => id !== pId) });
+            setState({ completedActions: completed.filter((id) => id !== pId) });
           } else {
             setState({ completedActions: [...completed, pId] });
             showToast('Action completed! Great job.', 'success');
           }
           renderContent();
         });
-        
-        card.appendChild(toggleBtn);
+
         pledgeGrid.appendChild(card);
       });
-      
+
       pledgeSec.appendChild(pledgeGrid);
       page.appendChild(pledgeSec);
     }
-    
-    // Discover Tips Section
+
+    // ─── Discover Tips ───────────────────────────────────────────
     const discSec = document.createElement('div');
-    discSec.innerHTML = `<h2>Discover Actions</h2>`;
-    
-    // Tabs
-    const tabs = document.createElement('div');
-    tabs.className = 'tab-list';
-    const categories = ['all', 'transport', 'energy', 'diet', 'shopping', 'lifestyle'];
-    
-    categories.forEach(c => {
-      const btn = document.createElement('button');
-      btn.className = `tab ${currentCategory === c ? 'active' : ''}`;
-      btn.textContent = c.charAt(0).toUpperCase() + c.slice(1);
-      btn.addEventListener('click', () => {
-        currentCategory = c;
-        renderContent();
-      });
-      tabs.appendChild(btn);
-    });
-    
-    discSec.appendChild(tabs);
-    
-    // Grid
+    discSec.appendChild(createSectionHeading('Discover Actions'));
+    discSec.appendChild(buildCategoryTabs((cat) => {
+      currentCategory = cat;
+      renderContent();
+    }));
+
     const tipGrid = document.createElement('div');
     tipGrid.className = 'grid grid-3';
-    
-    const filteredTips = TIPS.filter(t => currentCategory === 'all' || t.category === currentCategory)
-                             .filter(t => !pledges.includes(t.id));
-    
+
+    const filteredTips = TIPS
+      .filter((t) => currentCategory === 'all' || t.category === currentCategory)
+      .filter((t) => !pledges.includes(t.id));
+
     if (filteredTips.length === 0) {
-      tipGrid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: var(--space-8); color: var(--color-fg-muted);">You've pledged all actions in this category!</div>`;
+      tipGrid.appendChild(createEmptyState('You\'ve pledged all actions in this category!'));
     }
-    
-    filteredTips.forEach(t => {
-      const card = document.createElement('div');
-      card.className = 'card action-card';
-      card.style.padding = 'var(--space-5)';
-      
-      const badgeColor = t.impact === 'high' ? 'success' : t.impact === 'medium' ? 'info' : 'warning';
-      
-      card.innerHTML = sanitizeHTML(`
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-3);">
-          <div class="icon-wrapper" style="margin-bottom:0; width:40px; height:40px;">${iconSVG(t.icon, 20, '#10B981')}</div>
-          <span class="badge badge-${badgeColor}">${t.impact} Impact</span>
-        </div>
-        <h3 style="font-size: 1.1rem; margin-bottom: var(--space-2);">${t.title}</h3>
-        <p style="color: var(--color-fg-muted); font-size: 0.875rem; margin-bottom: var(--space-2); flex: 1;">${t.description}</p>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-4); font-size: 0.875rem; font-weight: 600;">
-          <span style="color: var(--color-primary);">~${formatCO2(t.savingsKgPerYear)}/yr</span>
-          <span style="color: var(--color-fg-muted);">Difficulty: ${t.difficulty}</span>
-        </div>
-      `);
-      
+
+    filteredTips.forEach((tip) => {
+      const card = createTipCard(tip);
+
       const pledgeBtn = document.createElement('button');
-      pledgeBtn.className = 'btn btn-outline';
-      pledgeBtn.style.width = '100%';
+      pledgeBtn.className = 'btn btn-outline w-full';
       pledgeBtn.innerHTML = `${iconSVG('heart', 16)} Pledge Action`;
-      
       pledgeBtn.addEventListener('click', () => {
-        setState({ pledges: [...pledges, t.id] });
+        setState({ pledges: [...pledges, tip.id] });
         showToast('Pledge added!', 'success');
         renderContent();
       });
-      
+
       card.appendChild(pledgeBtn);
       tipGrid.appendChild(card);
     });
-    
+
     discSec.appendChild(tipGrid);
     page.appendChild(discSec);
-    
-    if (page.parentNode === container) {
-      // already appended, just inner updates happened
-    } else {
+
+    if (!page.parentNode) {
       container.appendChild(page);
     }
-    
+
     setTimeout(() => createIcons({ root: page }), 0);
   };
-  
+
   renderContent();
-  
+
   return () => {};
 }

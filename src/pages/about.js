@@ -3,7 +3,7 @@
  * @description About and methodology page with inline SVG icons.
  */
 
-import { createIcons } from 'lucide';
+
 import { iconSVG } from '../utils/icon-helper.js';
 
 export default function render(container) {

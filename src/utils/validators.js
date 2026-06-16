@@ -15,7 +15,7 @@ export function sanitizeString(str) {
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
-      "'": '&#39;',
+      '\'': '&#39;',
       '"': '&quot;'
     }[tag] || tag)
   );
