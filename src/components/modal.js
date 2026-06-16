@@ -5,8 +5,29 @@
 
 import { trapFocus } from '../utils/accessibility.js';
 
+/** @type {Function | null} */
 let cleanupTrap = null;
 
+/**
+ * @typedef {Object} ModalAction
+ * @property {string} label
+ * @property {'primary' | 'secondary' | 'danger' | 'ghost'} [variant]
+ * @property {function(Event): void} [onClick]
+ * @property {boolean} [closeOnClick=true]
+ */
+
+/**
+ * @typedef {Object} ModalConfig
+ * @property {string} title
+ * @property {string | HTMLElement} content
+ * @property {ModalAction[]} [actions]
+ */
+
+/**
+ * Opens an accessible modal dialog.
+ * @param {ModalConfig} config - Modal configuration.
+ * @returns {function(): void} A function to programmatically close the modal.
+ */
 export function openModal(config) {
   const { title, content, actions = [] } = config;
   
@@ -102,11 +123,16 @@ export function openModal(config) {
   
   // Focus first element or modal itself
   setTimeout(() => {
+    /** @type {HTMLElement | null} */
     const firstFocusable = modalEl.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     if (firstFocusable) firstFocusable.focus();
     else modalEl.focus();
   }, 100);
   
+  /**
+   * Handles escape key to close modal
+   * @param {KeyboardEvent} e
+   */
   const handleKeydown = (e) => {
     if (e.key === 'Escape') closeModal();
   };
@@ -118,6 +144,9 @@ export function openModal(config) {
   };
 }
 
+/**
+ * Closes the currently active modal.
+ */
 export function closeModal() {
   const container = document.getElementById('modal-container');
   if (container) {

@@ -5,7 +5,15 @@
 
 import { createIcons } from 'lucide';
 
-export function showToast(message, type = 'info', duration = 4000) {
+const DEFAULT_TOAST_DURATION = 4000;
+
+/**
+ * Shows a toast notification.
+ * @param {string} message - The message to display.
+ * @param {'info' | 'success' | 'error' | 'warning'} [type='info'] - The type of toast.
+ * @param {number} [duration=4000] - Duration in ms before auto-dismiss (0 for persistent).
+ */
+export function showToast(message, type = 'info', duration = DEFAULT_TOAST_DURATION) {
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');

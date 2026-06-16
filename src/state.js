@@ -6,13 +6,28 @@
 
 const STATE_KEY = 'carbonwise_state';
 const HISTORY_KEY = 'carbonwise_history';
+const MAX_HISTORY_ENTRIES = 52; // 1 year of weekly tracking
 
 /** @type {Set<Function>} */
 const listeners = new Set();
 
 /**
+ * @typedef {import('./utils/calculator.js').CalculatorData} CalculatorData
+ */
+
+/**
+ * @typedef {Object} AppState
+ * @property {CalculatorData} calculatorData
+ * @property {Object|null} results
+ * @property {string[]} pledges
+ * @property {string[]} completedActions
+ * @property {number[]} quizScores
+ * @property {{ reducedMotion: boolean }} preferences
+ */
+
+/**
  * Default state shape
- * @returns {Object}
+ * @returns {AppState}
  */
 function getDefaultState() {
   return {
@@ -34,7 +49,7 @@ function getDefaultState() {
 
 /**
  * Load state from localStorage with validation
- * @returns {Object}
+ * @returns {AppState}
  */
 export function loadState() {
   try {
@@ -62,17 +77,18 @@ export function loadState() {
       quizScores: Array.isArray(parsed.quizScores) ? parsed.quizScores : [],
       preferences: { ...defaults.preferences, ...(parsed.preferences || {}) },
     };
-  } catch {
+  } catch (error) {
+    console.warn('Failed to load state from localStorage:', error);
     return getDefaultState();
   }
 }
 
-/** @type {Object} The current app state */
+/** @type {AppState} The current app state */
 let state = loadState();
 
 /**
  * Get current state (immutable copy)
- * @returns {Object}
+ * @returns {AppState}
  */
 export function getState() {
   return JSON.parse(JSON.stringify(state));
@@ -80,7 +96,7 @@ export function getState() {
 
 /**
  * Update state with partial changes and persist
- * @param {Object} updates - Partial state to merge
+ * @param {Partial<AppState>} updates - Partial state to merge
  */
 export function setState(updates) {
   state = deepMerge(state, updates);
@@ -115,17 +131,17 @@ export function saveToHistory(result) {
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
     const history = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(history)) throw new Error('Invalid history');
+    if (!Array.isArray(history)) throw new TypeError('Invalid history format');
 
     history.push({
       ...result,
       date: new Date().toISOString(),
     });
 
-    // Keep last 52 entries (1 year of weekly tracking)
-    const trimmed = history.slice(-52);
+    const trimmed = history.slice(-MAX_HISTORY_ENTRIES);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
-  } catch {
+  } catch (error) {
+    console.warn('Failed to save history, resetting:', error);
     localStorage.setItem(HISTORY_KEY, JSON.stringify([{ ...result, date: new Date().toISOString() }]));
   }
 }
@@ -140,7 +156,8 @@ export function loadHistory() {
     if (!raw) return [];
     const history = JSON.parse(raw);
     return Array.isArray(history) ? history : [];
-  } catch {
+  } catch (error) {
+    console.warn('Failed to load history:', error);
     return [];
   }
 }
@@ -152,6 +169,9 @@ export function loadHistory() {
  * @returns {Object}
  */
 function deepMerge(target, source) {
+  if (typeof target !== 'object' || target === null) return source;
+  if (typeof source !== 'object' || source === null) return source;
+  
   const output = { ...target };
   for (const key of Object.keys(source)) {
     if (
@@ -174,8 +194,8 @@ function deepMerge(target, source) {
 function persist() {
   try {
     localStorage.setItem(STATE_KEY, JSON.stringify(state));
-  } catch {
-    // Storage full or unavailable — fail silently
+  } catch (error) {
+    console.warn('Storage full or unavailable:', error);
   }
 }
 
@@ -184,8 +204,8 @@ function notify() {
   for (const fn of listeners) {
     try {
       fn(getState());
-    } catch {
-      // Prevent one bad listener from breaking others
+    } catch (error) {
+      console.error('Listener failed:', error);
     }
   }
 }

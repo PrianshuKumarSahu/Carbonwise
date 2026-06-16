@@ -3,6 +3,34 @@
  * @description Accessible form inputs.
  */
 
+/**
+ * @typedef {Object} SelectOption
+ * @property {string} value - The option value.
+ * @property {string} label - The visible label.
+ */
+
+/**
+ * @typedef {Object} FormGroupConfig
+ * @property {string} id - The ID for the input.
+ * @property {string} label - The input label.
+ * @property {string} [type='text'] - The input type (e.g., 'text', 'number', 'select').
+ * @property {string} [name] - The input name attribute.
+ * @property {number|string} [min] - The minimum value.
+ * @property {number|string} [max] - The maximum value.
+ * @property {number|string} [step] - The step attribute.
+ * @property {string|number} [value] - The initial value.
+ * @property {SelectOption[]} [options] - Options for select inputs.
+ * @property {string} [placeholder] - Placeholder text.
+ * @property {boolean} [required=true] - Whether the field is required.
+ * @property {string} [helpText] - Optional helper text.
+ * @property {string} [unit] - Optional unit suffix (e.g., 'kg').
+ */
+
+/**
+ * Creates an accessible form group container with label, input, and error display.
+ * @param {FormGroupConfig} config - The configuration for the form group.
+ * @returns {HTMLDivElement} The constructed form group element.
+ */
 export function createFormGroup(config) {
   const { id, label, type = 'text', name, min, max, step, value, options, placeholder, required = true, helpText, unit } = config;
   
@@ -25,6 +53,7 @@ export function createFormGroup(config) {
   inputContainer.style.display = 'flex';
   inputContainer.style.alignItems = 'center';
   
+  /** @type {HTMLInputElement | HTMLSelectElement} */
   let inputEl;
   if (type === 'select') {
     inputEl = document.createElement('select');
@@ -50,11 +79,11 @@ export function createFormGroup(config) {
     inputEl = document.createElement('input');
     inputEl.type = type;
     inputEl.className = 'input';
-    if (min !== undefined) inputEl.min = min;
-    if (max !== undefined) inputEl.max = max;
-    if (step !== undefined) inputEl.step = step;
+    if (min !== undefined) inputEl.min = String(min);
+    if (max !== undefined) inputEl.max = String(max);
+    if (step !== undefined) inputEl.step = String(step);
     if (placeholder) inputEl.placeholder = placeholder;
-    if (value !== undefined) inputEl.value = value;
+    if (value !== undefined) inputEl.value = String(value);
   }
   
   inputEl.id = id;
@@ -95,6 +124,24 @@ export function createFormGroup(config) {
   return group;
 }
 
+/**
+ * @typedef {Object} RangeSliderConfig
+ * @property {string} id - The ID for the input.
+ * @property {string} label - The input label.
+ * @property {string} [name] - The input name attribute.
+ * @property {number} [min=0] - The minimum value.
+ * @property {number} [max=100] - The maximum value.
+ * @property {number} [step=1] - The step size.
+ * @property {number} [value=50] - The initial value.
+ * @property {string} [unit='%'] - The unit to display.
+ * @property {boolean} [showValue=true] - Whether to show the current value next to the slider.
+ */
+
+/**
+ * Creates a range slider with an accessible label and live value display.
+ * @param {RangeSliderConfig} config - The configuration for the range slider.
+ * @returns {HTMLDivElement} The constructed range slider element.
+ */
 export function createRangeSlider(config) {
   const { id, label, name, min = 0, max = 100, step = 1, value = 50, unit = '%', showValue = true } = config;
   
@@ -113,23 +160,23 @@ export function createRangeSlider(config) {
   input.type = 'range';
   input.id = id;
   if (name) input.name = name;
-  input.min = min;
-  input.max = max;
-  input.step = step;
-  input.value = value;
+  input.min = String(min);
+  input.max = String(max);
+  input.step = String(step);
+  input.value = String(value);
   input.className = 'range-input';
   
   container.appendChild(input);
   
-  let valDisplay;
   if (showValue) {
-    valDisplay = document.createElement('div');
+    const valDisplay = document.createElement('div');
     valDisplay.className = 'range-value';
     valDisplay.textContent = `${value}${unit}`;
     container.appendChild(valDisplay);
     
     input.addEventListener('input', (e) => {
-      valDisplay.textContent = `${e.target.value}${unit}`;
+      const target = /** @type {HTMLInputElement} */ (e.target);
+      valDisplay.textContent = `${target.value}${unit}`;
     });
   }
   
@@ -139,9 +186,16 @@ export function createRangeSlider(config) {
   return group;
 }
 
+/**
+ * Validates an input field using a validation function, updating the UI accordingly.
+ * @param {HTMLInputElement|HTMLSelectElement} inputEl - The input element to validate.
+ * @param {Function} validateFn - The validation function that returns { valid: boolean, error: string }.
+ * @returns {boolean} True if valid, false otherwise.
+ */
 export function validateField(inputEl, validateFn) {
   const errorId = `${inputEl.id}-error`;
-  const errorEl = document.getElementById(errorId) || inputEl.parentNode.parentNode.querySelector('.form-error');
+  const parent = inputEl.parentElement?.parentElement;
+  const errorEl = document.getElementById(errorId) || (parent && parent.querySelector('.form-error'));
   
   if (!errorEl) return true;
   

@@ -4,9 +4,9 @@
  */
 
 /**
- * Sanitizes a string by replacing HTML entities
- * @param {string} str Input string
- * @returns {string} Sanitized string
+ * Sanitizes a string by replacing HTML entities.
+ * @param {string} str Input string.
+ * @returns {string} Sanitized string.
  */
 export function sanitizeString(str) {
   if (typeof str !== 'string') return '';
@@ -22,11 +22,18 @@ export function sanitizeString(str) {
 }
 
 /**
- * Validates a number input
- * @param {number|string} value Input value
- * @param {number} min Minimum allowed
- * @param {number} max Maximum allowed
- * @returns {Object} { valid, value, error }
+ * @typedef {Object} ValidationResult
+ * @property {boolean} valid
+ * @property {any} value
+ * @property {string} error
+ */
+
+/**
+ * Validates a number input.
+ * @param {number|string} value Input value.
+ * @param {number} [min=0] Minimum allowed.
+ * @param {number} [max=Infinity] Maximum allowed.
+ * @returns {ValidationResult}
  */
 export function validateNumber(value, min = 0, max = Infinity) {
   const num = typeof value === 'number' ? value : parseFloat(value);
@@ -47,10 +54,10 @@ export function validateNumber(value, min = 0, max = Infinity) {
 }
 
 /**
- * Validates a select input
- * @param {string} value Input value
- * @param {Array<string>} allowedValues Allowed values
- * @returns {Object} { valid, value, error }
+ * Validates a select input.
+ * @param {string} value Input value.
+ * @param {string[]} allowedValues Allowed values.
+ * @returns {ValidationResult}
  */
 export function validateSelect(value, allowedValues) {
   if (!allowedValues.includes(value)) {
@@ -60,50 +67,40 @@ export function validateSelect(value, allowedValues) {
 }
 
 /**
- * Validates common calculator fields
- * @param {string} field Field name
- * @param {any} value Input value
- * @returns {Object} { valid, value, error }
+ * Registry of validation rules for calculator inputs to avoid high cyclomatic complexity.
+ * @type {Record<string, Function>}
+ */
+const CALCULATOR_VALIDATORS = {
+  // Transport
+  carKmPerWeek: (v) => validateNumber(v, 0, 10000),
+  carType: (v) => validateSelect(v, ['petrol', 'diesel', 'hybrid', 'electric', 'none']),
+  flightsPerYear: (v) => validateNumber(v, 0, 100),
+  publicTransitHoursPerWeek: (v) => validateNumber(v, 0, 168),
+  // Home
+  electricityKwh: (v) => validateNumber(v, 0, 20000),
+  gasKwh: (v) => validateNumber(v, 0, 20000),
+  renewablePercent: (v) => validateNumber(v, 0, 100),
+  residents: (v) => validateNumber(v, 1, 20),
+  // Diet
+  dietType: (v) => validateSelect(v, ['vegan', 'vegetarian', 'pescatarian', 'omnivore', 'high-meat']),
+  foodWastePercent: (v) => validateNumber(v, 0, 100),
+  localFoodPercent: (v) => validateNumber(v, 0, 100),
+  // Shopping
+  clothingItemsPerMonth: (v) => validateNumber(v, 0, 100),
+  electronicsPerYear: (v) => validateNumber(v, 0, 50),
+  recyclePercent: (v) => validateNumber(v, 0, 100),
+};
+
+/**
+ * Validates common calculator fields dynamically.
+ * @param {string} field Field name.
+ * @param {any} value Input value.
+ * @returns {ValidationResult}
  */
 export function validateCalculatorInput(field, value) {
-  switch (field) {
-    // Transport
-    case 'carKmPerWeek':
-      return validateNumber(value, 0, 10000);
-    case 'carType':
-      return validateSelect(value, ['petrol', 'diesel', 'hybrid', 'electric', 'none']);
-    case 'flightsPerYear':
-      return validateNumber(value, 0, 100);
-    case 'publicTransitHoursPerWeek':
-      return validateNumber(value, 0, 168);
-      
-    // Home
-    case 'electricityKwh':
-      return validateNumber(value, 0, 20000);
-    case 'gasKwh':
-      return validateNumber(value, 0, 20000);
-    case 'renewablePercent':
-      return validateNumber(value, 0, 100);
-    case 'residents':
-      return validateNumber(value, 1, 20);
-      
-    // Diet
-    case 'dietType':
-      return validateSelect(value, ['vegan', 'vegetarian', 'pescatarian', 'omnivore', 'high-meat']);
-    case 'foodWastePercent':
-      return validateNumber(value, 0, 100);
-    case 'localFoodPercent':
-      return validateNumber(value, 0, 100);
-      
-    // Shopping
-    case 'clothingItemsPerMonth':
-      return validateNumber(value, 0, 100);
-    case 'electronicsPerYear':
-      return validateNumber(value, 0, 50);
-    case 'recyclePercent':
-      return validateNumber(value, 0, 100);
-      
-    default:
-      return { valid: true, value, error: '' };
+  const validator = CALCULATOR_VALIDATORS[field];
+  if (validator) {
+    return validator(value);
   }
+  return { valid: true, value, error: '' };
 }
